@@ -17,7 +17,8 @@ nonisolated enum ProcessError: Error, Equatable, Sendable {
 /// Runs an external tool off the main actor and terminates it if the calling task is cancelled.
 nonisolated enum ProcessRunner {
     /// Homebrew directories first, so tools find each other (yt-dlp → ffmpeg, deno).
-    static let searchPath = (ToolLocator.defaultSearchDirectories.map { $0.path(percentEncoded: false) }
+    static let searchPath = (ToolLocator.defaultSearchDirectories.map { $0.standardizedFileURL.path(percentEncoded: false) }
+        .map { $0.hasSuffix("/") ? String($0.dropLast()) : $0 }
         + ["/usr/bin", "/bin", "/usr/sbin", "/sbin"]).joined(separator: ":")
 
     /// - Parameter onOutputLine: Called for every line on stdout or stderr, split on `\n` or `\r`
