@@ -30,12 +30,14 @@ nonisolated enum CaptionDeduplicator {
             let tail = existing.suffix(length)
             let head = incoming.prefix(length)
             guard zip(tail, head).allSatisfy({ $0.comparisonKey == $1.comparisonKey }),
-                  let firstRepeat = head.first, let lastExisting = tail.last
+                  let firstRepeat = head.first, let firstExisting = tail.first, let lastExisting = tail.last
             else { continue }
 
             // Short matches like "that that" are often genuine speech. Only treat them as repeats
-            // when the incoming words start before the existing ones have finished.
-            let isRedisplay = firstRepeat.start < lastExisting.end - timingTolerance
+            // when the incoming words carry the same timestamps, or start before the existing
+            // ones have finished.
+            let sameTiming = abs(firstRepeat.start - firstExisting.start) <= timingTolerance
+            let isRedisplay = sameTiming || firstRepeat.start < lastExisting.end - timingTolerance
             if length >= confidentOverlap || isRedisplay {
                 return length
             }
