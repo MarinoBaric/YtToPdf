@@ -14,6 +14,8 @@ nonisolated struct TranscriptAssembler: Sendable {
         var softParagraphPause: TimeInterval = 0.35
         var minSentenceWords = 3
         var maxUnpunctuatedSentenceWords = 28
+        /// Safety cap for punctuated text whose punctuation never closes a sentence.
+        var maxPunctuatedSentenceWords = 100
         var minParagraphWords = 30
         var targetParagraphWords = 80
         var maxParagraphWords = 140
@@ -55,19 +57,27 @@ nonisolated struct TranscriptAssembler: Sendable {
         return endings > 0 && endings * 40 >= words.count
     }
 
+    /// Splits after sentence punctuation, but never right before a lowercase word: in punctuated
+    /// text that means the sentence carries on (`"Why?" he asked`, `…, thankfully.`).
     private func splitOnPunctuation(_ words: [SpokenWord]) -> [[SpokenWord]] {
         var sentences: [[SpokenWord]] = []
         var current: [SpokenWord] = []
         for (index, word) in words.enumerated() {
             let pause = index > 0 ? word.start - words[index - 1].end : 0
-            if !current.isEmpty, word.startsTurn || pause >= configuration.paragraphPause * 2 {
+            let continues = Self.startsLowercase(word.text)
+            if !current.isEmpty, word.startsTurn || (pause >= configuration.paragraphPause * 2 && !continues) {
                 sentences.append(current)
                 current = []
             }
             current.append(word)
-            if Self.endsSentence(word.text) {
+            let nextContinues = index + 1 < words.endIndex && Self.startsLowercase(words[index + 1].text)
+            if Self.endsSentence(word.text), !nextContinues {
                 sentences.append(current)
                 current = []
+            } else if current.count >= configuration.maxPunctuatedSentenceWords {
+                let (head, tail) = splitAtLongestPause(current)
+                sentences.append(head)
+                current = tail
             }
         }
         if !current.isEmpty { sentences.append(current) }
@@ -117,6 +127,10 @@ nonisolated struct TranscriptAssembler: Sendable {
         // Initials such as "J." in "J. R. R. Tolkien".
         if core.count == 2, core.first?.isUppercase == true, last == "." { return false }
         return true
+    }
+
+    private static func startsLowercase(_ text: String) -> Bool {
+        text.first { $0.isLetter }?.isLowercase == true
     }
 
     /// Capitalises and punctuates an ASR sentence: "so i think" → "So I think."

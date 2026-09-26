@@ -79,6 +79,14 @@ struct CaptionCleanupTests {
         #expect(paragraphs[1].start == 20)
     }
 
+    @Test func punctuatedSentencesAreCappedWhenPunctuationNeverClosesThem() {
+        // Every word is lowercase, so no full stop may end a sentence; the cap must still apply.
+        let stream = words(Array(repeating: "and.", count: 250).joined(separator: " "), from: 0, step: 0.2)
+        let sentences = TranscriptAssembler().assemble(stream).flatMap(\.sentences)
+        #expect(sentences.count >= 3)
+        #expect(sentences.allSatisfy { $0.words.count <= 100 })
+    }
+
     @Test func englishPausesAfterFunctionWordsAreHesitations() {
         // "first let's … talk" has a pause after "let's"; "sanding … then" has one after a noun.
         let stream = words("now we can sand the board first let's", from: 0)
@@ -90,6 +98,19 @@ struct CaptionCleanupTests {
         // Without the English word list the pause after "let's" still ends the sentence.
         let other = TranscriptAssembler().assemble(stream, languageCode: "hr").flatMap(\.sentences)
         #expect(other.count == 3)
+    }
+
+    @Test func punctuatedTextNeverStartsASentenceOnALowercaseWord() {
+        let quoted = words(#"She asked, "Is it ready?" and we laughed."#, from: 0)
+        // A dash-interrupted line, a long gap (applause removed), then the sentence carries on.
+        let interrupted = words("We were about to -", from: 4) + words("because it rained. Then we left.", from: 12)
+        let sentences = TranscriptAssembler().assemble(quoted + interrupted).flatMap(\.sentences).map(\.text)
+
+        #expect(sentences == [
+            #"She asked, "Is it ready?" and we laughed."#,
+            "We were about to - because it rained.",
+            "Then we left.",
+        ])
     }
 
     @Test(arguments: [("Hello.", true), ("Dr.", false), ("J.", false), ("right?\"", true), ("wait…", true), ("so,", false)])
