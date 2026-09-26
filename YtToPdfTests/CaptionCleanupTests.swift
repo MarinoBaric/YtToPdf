@@ -21,6 +21,8 @@ struct CaptionCleanupTests {
         ("He said (and I quote, loudly and clearly) no.", "He said (and I quote, loudly and clearly) no.", false),
         (">> Are you ready?", "Are you ready?", true),
         ("- Hi there.\\nHow are you?", "Hi there. How are you?", true),
+        ("- because it rained.", "because it rained.", false),
+        (">> because it rained", "because it rained", true),
         ("Tom &amp; Jerry&#39;s show", "Tom & Jerry's show", false),
     ])
     func cleansAnnotations(_ raw: String, _ expected: String, _ turn: Bool) {

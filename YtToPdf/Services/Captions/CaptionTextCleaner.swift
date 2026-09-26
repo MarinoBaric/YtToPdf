@@ -28,8 +28,11 @@ nonisolated enum CaptionTextCleaner {
         var startsTurn = false
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         for marker in [">>", "- ", "– ", "— "] where trimmed.hasPrefix(marker) {
-            startsTurn = true
             text = String(trimmed.dropFirst(marker.count))
+            // A dash before a lowercase word continues an interrupted sentence ("- because…");
+            // only a capitalised line after a dash is a new speaker.
+            let continues = marker != ">>" && text.first { $0.isLetter }?.isLowercase == true
+            startsTurn = !continues
             break
         }
         if text.contains(">>") {
