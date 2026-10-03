@@ -6,6 +6,7 @@ nonisolated enum PipelineError: Error, Equatable, Sendable {
     case youTube(YouTubeError)
     case captions(CaptionParserError)
     case whisper(WhisperError)
+    case export(PDFExportError)
 
     var isCancellation: Bool {
         self == .youTube(.cancelled) || self == .whisper(.cancelled)
@@ -17,6 +18,7 @@ nonisolated enum PipelineError: Error, Equatable, Sendable {
         case .youTube(let error): error
         case .captions(let error): error
         case .whisper(let error): error
+        case .export(let error): error
         }
     }
 }
