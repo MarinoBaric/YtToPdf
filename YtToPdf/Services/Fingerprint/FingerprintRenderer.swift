@@ -83,28 +83,23 @@ nonisolated enum FingerprintRenderer {
         context.fillPath()
     }
 
-    /// Fills the marks with the accent colour fading from full to `endOpacity`, left to right,
-    /// along the fingerprint's seeded tilt.
+    /// Fades the marks from full colour to `endOpacity`, left to right, along the fingerprint's
+    /// seeded tilt.
+    ///
+    /// Each mark gets a solid fill at its own opacity rather than sharing one clipped gradient:
+    /// a PDF shading can't carry transparency, so a gradient fade would come out at full strength
+    /// in the exported PDF. Bars are thin enough that this reads as a smooth gradient.
     private static func drawGradient(_ marks: [FingerprintGeometry.Mark], in context: CGContext, rect: CGRect, style: Style, tilt: Double) {
-        let start = style.color
-        let end = style.color.copy(alpha: style.color.alpha * style.endOpacity) ?? style.color
-        guard let gradient = CGGradient(colorsSpace: style.color.colorSpace, colors: [start, end] as CFArray, locations: [0, 1]) else {
-            fill(marks, in: context, color: style.color)
-            return
-        }
-
         let angle = style.yAxisPointsUp ? -tilt : tilt
-        let halfWidth = rect.width / 2
+        let direction = CGPoint(x: cos(angle), y: sin(angle))
+        let halfLength = rect.width / 2
         let center = CGPoint(x: rect.midX, y: rect.midY)
-        let offset = CGPoint(x: cos(angle) * halfWidth, y: sin(angle) * halfWidth)
 
-        context.addPath(path(for: marks))
-        context.clip()
-        context.drawLinearGradient(
-            gradient,
-            start: CGPoint(x: center.x - offset.x, y: center.y - offset.y),
-            end: CGPoint(x: center.x + offset.x, y: center.y + offset.y),
-            options: [.drawsBeforeStartLocation, .drawsAfterEndLocation]
-        )
+        for mark in marks {
+            let projection = (mark.rect.midX - center.x) * direction.x + (mark.rect.midY - center.y) * direction.y
+            let position = min(1, max(0, (projection + halfLength) / (2 * halfLength)))
+            let opacity = 1 - (1 - style.endOpacity) * position
+            fill([mark], in: context, color: style.color.copy(alpha: style.color.alpha * opacity) ?? style.color)
+        }
     }
 }
