@@ -80,9 +80,10 @@ nonisolated struct PDFHeroRenderer {
                 Detail(label: "Words", value: transcript.wordCount.formatted()),
             ],
             [
-                Detail(label: "Source", value: "\(transcript.source.label) · \(language)"),
+                Detail(label: "Source", value: transcript.source.shortLabel),
+                Detail(label: "Language", value: language),
                 Detail(label: "Generated", value: generated),
-                Detail(label: "Video", value: Self.displayURL(metadata.webpageURL), link: metadata.webpageURL, columns: 2),
+                Detail(label: "Video", value: "youtu.be/\(metadata.id)", link: metadata.webpageURL),
             ],
         ]
     }
@@ -124,15 +125,6 @@ nonisolated struct PDFHeroRenderer {
     }
 
     // MARK: - Helpers
-
-    /// `youtube.com/watch?v=…` without the scheme and `www.`, as people write it.
-    static func displayURL(_ url: URL) -> String {
-        var text = url.absoluteString
-        for prefix in ["https://", "http://", "www."] where text.hasPrefix(prefix) {
-            text.removeFirst(prefix.count)
-        }
-        return text
-    }
 
     /// Wraps `string` into at most `maxLines` lines, ending the last with an ellipsis if cut.
     static func wrap(_ string: NSAttributedString, width: CGFloat, maxLines: Int, theme: PDFTheme) -> [CTLine] {

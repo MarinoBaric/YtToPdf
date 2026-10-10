@@ -13,6 +13,15 @@ nonisolated enum TranscriptSource: String, Codable, Sendable, CaseIterable {
         case .whisper: "Transcribed locally"
         }
     }
+
+    /// A compact label for tight spaces such as the PDF's details grid.
+    var shortLabel: String {
+        switch self {
+        case .manualCaptions: "Manual captions"
+        case .autoCaptions: "Auto captions"
+        case .whisper: "Local transcription"
+        }
+    }
 }
 
 /// A single word (or the smallest caption fragment available) with its time range in seconds.

@@ -87,7 +87,10 @@ struct PDFExporterTests {
         #expect(first.contains("The Patient Workshop"))
         #expect(first.contains("CHANNEL") && first.contains("Sample Workshop"))
         #expect(first.contains(Self.transcript.wordCount.formatted()))
-        #expect(first.contains("youtube.com/watch?v=abcdefghijk"))
+        #expect(first.contains("youtu.be/abcdefghijk"))
+        #expect(first.contains("LANGUAGE") && first.contains("Manual captions"))
+        let videoLink = (document.page(at: 0)?.annotations ?? []).compactMap(\.url).first { !$0.absoluteString.contains("&t=") }
+        #expect(videoLink?.absoluteString == "https://www.youtube.com/watch?v=abcdefghijk")
 
         for index in 0..<total {
             let text = try #require(document.page(at: index)?.string)
