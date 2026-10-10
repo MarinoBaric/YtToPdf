@@ -63,6 +63,19 @@ struct SettingsTests {
         #expect(ThumbnailPalette.accent(from: Data("not an image".utf8)) == nil)
     }
 
+    @Test(arguments: (0..<12).map { Double($0) / 12 })
+    func everyHueEndsUpReadableOnWhite(_ hue: Double) {
+        // A vivid, bright pixel of each hue, including yellows that are pale by nature.
+        let sector = Int(hue * 6), f = hue * 6 - Double(sector)
+        let rgb: (Double, Double, Double) = [(1, f, 0), (1 - f, 1, 0), (0, 1, f), (0, 1 - f, 1), (f, 0, 1), (1, 0, 1 - f)][sector % 6]
+        let pixels = Array(repeating: (r: rgb.0, g: rgb.1, b: rgb.2), count: 100)
+        guard let accent = ThumbnailPalette.accent(fromRGB: pixels) else {
+            Issue.record("no accent for hue \(hue)")
+            return
+        }
+        #expect(ThumbnailPalette.contrastOnWhite(components(accent)) >= ThumbnailPalette.minimumContrastOnWhite)
+    }
+
     @Test func presetAccentsAreAllReadableOnWhite() {
         for preset in AppSettings.presetAccents {
             #expect(ThumbnailPalette.contrastOnWhite(components(preset)) >= ThumbnailPalette.minimumContrastOnWhite)

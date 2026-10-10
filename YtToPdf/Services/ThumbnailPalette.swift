@@ -28,7 +28,9 @@ nonisolated enum ThumbnailPalette {
 
         for pixel in pixels {
             let (hue, saturation, brightness) = hsb(pixel.r, pixel.g, pixel.b)
-            guard saturation >= 0.2, brightness >= 0.18, brightness <= 0.98 else { continue }
+            // Low saturation covers greys and near-whites; very dark pixels have no reliable hue.
+            // Bright, fully saturated pixels are kept: they're often a thumbnail's boldest colour.
+            guard saturation >= 0.2, brightness >= 0.18 else { continue }
             // Favour vivid, mid-bright pixels: they carry a thumbnail's character.
             let weight = saturation * (1 - abs(brightness - 0.6))
             let bucket = min(bucketCount - 1, Int(hue * Double(bucketCount)))
