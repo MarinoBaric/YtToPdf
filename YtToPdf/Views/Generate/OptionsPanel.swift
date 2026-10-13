@@ -40,6 +40,7 @@ struct OptionsPanel: View {
                 GridRow {
                     rowLabel("Captions")
                     Toggle("Prefer manual captions", isOn: $model.options.preferManualCaptions)
+                        .disabled(model.metadata?.hasCaptions != true)
                 }
                 if model.willUseWhisper {
                     GridRow {
