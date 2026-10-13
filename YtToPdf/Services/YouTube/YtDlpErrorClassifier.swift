@@ -14,6 +14,7 @@ nonisolated enum YtDlpErrorClassifier {
                       "internet connection appears to be offline", "timed out", "connection refused", "no route to host",
                       "unable to download api page", "urlopen error"]),
         (.invalidURL, ["unsupported url", "is not a valid url"]),
+        (.downloadBlocked, ["http error 403", "403: forbidden"]),
         (.ytDlpOutdated, ["latest version", "yt-dlp -u", "signature extraction failed", "nsig extraction failed",
                           "unable to extract", "please report this issue"]),
     ]

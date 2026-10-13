@@ -52,7 +52,35 @@ nonisolated struct YouTubeService: Sendable {
     }
 
     /// Downloads the best audio-only stream into `directory`, reporting progress from 0 to 1.
+    ///
+    /// YouTube sometimes refuses a single attempt with HTTP 403; each new attempt gets fresh
+    /// stream URLs and usually succeeds, so a refusal is retried before giving up.
     func downloadAudio(
+        for link: YouTubeLink,
+        into directory: URL,
+        attempts: Int = 3,
+        progress: @escaping @Sendable (Double) -> Void
+    ) async throws(YouTubeError) -> URL {
+        var attempt = 1
+        while true {
+            do {
+                return try await downloadAudioOnce(for: link, into: directory, progress: progress)
+            } catch .downloadBlocked where attempt < attempts {
+                attempt += 1
+                Self.removePartialDownloads(in: directory)
+                try? await Task.sleep(for: .seconds(Double(attempt)))
+            }
+        }
+    }
+
+    private static func removePartialDownloads(in directory: URL) {
+        let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
+        for file in files where file.lastPathComponent.hasPrefix("audio.") {
+            try? FileManager.default.removeItem(at: file)
+        }
+    }
+
+    private func downloadAudioOnce(
         for link: YouTubeLink,
         into directory: URL,
         progress: @escaping @Sendable (Double) -> Void

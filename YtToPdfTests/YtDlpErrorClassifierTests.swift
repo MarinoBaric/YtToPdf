@@ -14,6 +14,7 @@ struct YtDlpErrorClassifierTests {
         ("ERROR: [youtube] abc: Unable to download API page: <urlopen error [Errno 8] nodename nor servname provided, or not known>", .noNetwork),
         ("ERROR: [youtube] abc: Failed to extract any player response; please report this issue on https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U", .ytDlpOutdated),
         ("ERROR: Unsupported URL: https://example.com", .invalidURL),
+        ("ERROR: unable to download video data: HTTP Error 403: Forbidden", .downloadBlocked),
     ])
     func recognisesKnownFailures(_ stderr: String, _ expected: YouTubeError) {
         #expect(YtDlpErrorClassifier.classify(stderr) == expected)
@@ -35,5 +36,6 @@ struct YtDlpErrorClassifierTests {
     @Test func outdatedErrorOffersTheUpgradeCommand() {
         #expect(YouTubeError.ytDlpOutdated.fixCommand == "brew upgrade yt-dlp")
         #expect(YouTubeError.privateVideo.fixCommand == nil)
+        #expect(YouTubeError.downloadBlocked.fixCommand == "brew install deno")
     }
 }

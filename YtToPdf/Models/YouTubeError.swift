@@ -10,6 +10,7 @@ nonisolated enum YouTubeError: Error, Equatable, Sendable {
     case liveOrUpcoming
     case botCheck
     case noNetwork
+    case downloadBlocked
     case ytDlpOutdated
     case captionsUnavailable
     case malformedOutput(String)
@@ -30,6 +31,7 @@ extension YouTubeError: LocalizedError {
         case .liveOrUpcoming: "This is a live stream or premiere that hasn't finished."
         case .botCheck: "YouTube is asking to confirm you're not a bot."
         case .noNetwork: "Can't reach YouTube."
+        case .downloadBlocked: "YouTube refused the download."
         case .ytDlpOutdated: "yt-dlp needs an update."
         case .captionsUnavailable: "The captions for this video couldn't be downloaded."
         case .malformedOutput: "yt-dlp returned data YtToPdf couldn't read."
@@ -48,6 +50,7 @@ extension YouTubeError: LocalizedError {
         case .liveOrUpcoming: "Try again once the stream has ended and YouTube has processed it."
         case .botCheck: "Wait a few minutes and try again. Updating yt-dlp often helps too."
         case .noNetwork: "Check your internet connection and try again."
+        case .downloadBlocked: "This is usually temporary, so try again in a moment. Installing Deno lets yt-dlp handle YouTube's download protections:"
         case .ytDlpOutdated: "YouTube changes often. Run this in Terminal, then try again:"
         case .captionsUnavailable: "Try another language, or turn off “Prefer manual captions”."
         case .malformedOutput(let detail), .toolFailed(let detail): detail
@@ -59,6 +62,7 @@ extension YouTubeError: LocalizedError {
     var fixCommand: String? {
         switch self {
         case .ytDlpOutdated, .botCheck: Self.updateCommand
+        case .downloadBlocked: "brew install deno"
         default: nil
         }
     }
