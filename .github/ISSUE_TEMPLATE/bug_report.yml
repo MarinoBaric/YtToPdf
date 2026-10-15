@@ -1,0 +1,49 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting a problem. The details below help reproduce it quickly.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: video
+    attributes:
+      label: Video link
+      description: A public video that shows the problem, if there is one.
+      placeholder: https://youtu.be/…
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Paste the link
+        2. Set Timestamps to 30 s
+        3. Click Generate
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 27.0
+    validations:
+      required: true
+  - type: input
+    id: ytdlp
+    attributes:
+      label: yt-dlp version
+      description: Output of `yt-dlp --version`
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, error messages, the PDF settings you used…
